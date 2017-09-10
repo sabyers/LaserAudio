@@ -17,9 +17,11 @@ Amplitude = 1;
 
 %User defined variables
 %=========================================================================
-SamplingFrequency = input(['Please enter a sampling frequency in Hertz: ']); 
+Song = input(['Please enter full path of song including extension: '], 's');
+clc;
+SamplingFrequency = input(['Please enter desired sampling frequency in Hertz: ']); 
 
-bits = input(['Please enter how many bits for quantization: ' ]);
+bits = input(['Please enter how many bits for uniform quantization: ' ]);
 
 while(bits > BitMax || bits < BitMin)
     fprintf(['Error invalid number of bits\n']);
@@ -27,8 +29,6 @@ while(bits > BitMax || bits < BitMin)
 end
 
 Sound = input(['Please enter playback mode "1" for mono "2" for stereo: ']);
-
-Song = input(['Please enter full path of song including extension: '], 's');
 
 %=========================================================================
 
@@ -77,13 +77,11 @@ tsig_right_norm = transpose(sig_right_norm);
 clc; fprintf('Quantizing song\nPlease Wait...');
 if (Sound == 1)               %Mono quantization
     quant = zeros(n,1);
-    if(bits > 2)
+    if(bits > 1)
     quant_right = adc_NU(tsig_right_norm,Amplitude,bits);
     for(j=1:n)
         quant(j) = quant_right(1, j);
     end
-    elseif(bits > 1)
-        %do something
     else
         for(j=1:n)
             if (sig_right(j) > 0)
@@ -95,15 +93,13 @@ if (Sound == 1)               %Mono quantization
     end
 else                        %Stereo quantization
     quant = zeros(n,2);
-    if(bits > 2)
+    if(bits > 1)
     quant_left = adc_NU(tsig_left_norm,Amplitude,bits);
     quant_right = adc_NU(tsig_right_norm,Amplitude,bits);
     for(j=1:n)
         quant(j,1) = quant_left(1,j);
         quant(j,2) = quant_right(1,j);
     end
-    elseif(bits > 1)
-        %do something
     else
         for(j=1:n)
            
@@ -120,6 +116,13 @@ else                        %Stereo quantization
         end
     end
 end
+
+%=========================================================================
+%Running Signal through LPF
+%=========================================================================
+
+clc; fprintf('Filtering song\nPlease Wait...');
+
 fprintf('\n\nDone Converting\n');
 
 %=========================================================================
