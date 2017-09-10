@@ -1,5 +1,5 @@
 %==========================================================================
-%Name:          Audio Samplig
+%Name:          Audio Sampling
 %Author:        Saul Byers
 %Class:         ECE 3332 - 301
 %Date:          09-09-2017
@@ -121,7 +121,19 @@ end
 %Running Signal through LPF
 %=========================================================================
 
+fprintf('\n');
+Fltr = input(['Do you want to filter the siganl? (Y/N): '], 's');
+
+if (Fltr == 'Y' || Fltr == 'y')
 clc; fprintf('Filtering song\nPlease Wait...');
+quant = quant.*10;
+fc1 = 20; % Cut off frequency
+[b,a] = cheby2(6,3, 2*pi/fc1); % Butterworth filter
+quant = filter(b,a,quant); % Will be the filtered signal
+quant = quant + 1;
+quant = quant./max(quant(:));
+end
+
 
 fprintf('\n\nDone Converting\n');
 
