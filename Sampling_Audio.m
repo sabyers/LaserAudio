@@ -118,7 +118,7 @@ else                        %Stereo quantization
 end
 
 %=========================================================================
-%Running Signal through LPF
+%Running Signal through LPF/Guassian filter
 %=========================================================================
 
 fprintf('\n');
@@ -126,12 +126,20 @@ Fltr = input(['Do you want to filter the siganl? (Y/N): '], 's');
 
 if (Fltr == 'Y' || Fltr == 'y')
 clc; fprintf('Filtering song\nPlease Wait...');
-quant = quant.*10;
-fc1 = 20; % Cut off frequency
-[b,a] = cheby2(6,3, 2*pi/fc1); % Butterworth filter
-quant = filter(b,a,quant); % Will be the filtered signal
-quant = quant + 1;
-quant = quant./max(quant(:));
+%Guassian Filter
+%==========================================================================
+g = gausswin(20); % <-- this value determines the width of the smoothing window
+g = g/sum(g);
+quant(:,1) = conv(quant(:,1), g, 'same');
+quant(:,2) = conv(quant(:,2), g, 'same');
+%Chebyshev Filter
+%==========================================================================
+% quant = quant.*10;
+% fc1 = 20; % Cut off frequency
+% [b,a] = cheby2(6,3, 2*pi/fc1); % Chebyshev filter
+% quant = filter(b,a,quant); % Will be the filtered signal
+% quant = quant + 1;
+% quant = quant./max(quant(:));
 end
 
 
@@ -149,3 +157,4 @@ fprintf('Your song is Ready!\n');
 %=========================================================================
 %End of all code
 %=========================================================================
+
