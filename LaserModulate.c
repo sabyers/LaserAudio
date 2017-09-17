@@ -36,24 +36,18 @@
 //----------------------------------------------------------------------
 // CONSTANT DEFINITIONS
 
-#define TIMER_A1_COUNT_1    120 // set count value for TimerA_1  
+#define TIMER_A1_COUNT_1    100 // set count value for TimerA_1  
 //Signal Out
 
-#define TIMER_A0_COUNT_0    120 // set count value for TimerA_0
-//ADC
-
+#define MonoEn          1
 
 //----------------------------------------------------------------------
 // GLOBAL VARIABLE definition
-unsigned int Delay = 0x0200u;   //Set Delay time to stabilize pushbutton and 
-                                //the temperature display change rate 
 unsigned int RawSignalRight;
 
-unsigned int LeftRightSelect = 0; //Start with right audio
+int LeftRightSelect = 0; //Start with right audio
 
 unsigned int ADC[1];
-
-
 
 
 int main( void )
@@ -82,13 +76,7 @@ int main( void )
   TA1CTL = TASSEL_2 + ID_0 + MC_1;  //SMCLK/1, up mode
   TA1CCTL0 = CCIE;                  //enable the timer interrupt
   
- //SetupTimerA0
-  TA0CCR0 = TIMER_A0_COUNT_0;   //load a count value into the counter
-  TA0CTL = TASSEL_2 + ID_0 + MC_1;  //SMCLK/1, up mode
-  TA0CCTL0 = CCIE;                  //enable the timer interrupt
-  
-  
-  
+   
   
 // setup ADC
   ADC10CTL0 = SREF_1+ADC10SHT_3+MSC+REFON+ADC10ON;//+ADC10IE; 
@@ -102,48 +90,37 @@ int main( void )
   
   while(1)      
   {
+    ADC10CTL0 |= ENC + ADC10SC;       //Starts ADC conversion
+    ADC10SA = (short)&ADC[0]; // ADC10 data transfer starting address
+    while(ADC10BUSY & ADC10CTL1 ); //Waits for conversion to finish 
   }
   
   
   return 0;
 }
 
-#pragma vector = TIMER0_A0_VECTOR
-__interrupt void Timer_A0_ISR (void)
-{ 
-    ADC10CTL0 |= ENC + ADC10SC;       //Starts ADC conversion
-    ADC10SA = (short)&ADC[0]; // ADC10 data transfer starting address
-    while(ADC10BUSY & ADC10CTL1 ); //Waits for conversion to finish 
-}
-
 
 #pragma vector = TIMER1_A0_VECTOR
 __interrupt void Timer_A1_ISR (void)
 {
-  
-  if(ADC[0] >= 512)
-    P2OUT |= BIT0;    //P2.0 = 1
-  else
-    P2OUT &= ~BIT0;     //P2.1 = 0
-
-  LeftRightSelect ^= 0x1; //Toggles between 1 and 0 
+   if(LeftRightSelect == 0)
+   {
+    if(ADC[0] >= 850)
+      P2OUT |= BIT0;    //P2.0 = 1
+    else
+      P2OUT &= ~BIT0;     //P2.0= 0
+   }
+  else //if(LeftRightSelect == 1)
+  {
+    if(ADC[1] >= 850)
+      P2OUT |= BIT0;    //P2.0 = 1
+    else
+      P2OUT &= ~BIT0;     //P2.0 = 0
+  }
+  if(MonoEn == 0)
+  {
+    LeftRightSelect ^= 1;
+  }
 }
-
-
-//ADC10 interrupt Service Routine
-#pragma vector=ADC10_VECTOR
-__interrupt void ADC10_ISR (void) {
-
-          // ADC[0] has A1 value and ADC[1] has A0's value
-
-	ADC10CTL0 &= ~ADC10IFG;  // clear interrupt flag
-	ADC10SA = (short)&ADC[0]; // ADC10 data transfer starting address.
-}
-
-
-
-
-
-
 
 
