@@ -39,7 +39,7 @@
 #define TIMER_A1_COUNT_1    100 // set count value for TimerA_1  
 //Signal Out
 
-#define MonoEn          1
+#define MonoEn          0
 
 //----------------------------------------------------------------------
 // GLOBAL VARIABLE definition
